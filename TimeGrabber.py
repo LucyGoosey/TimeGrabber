@@ -137,19 +137,19 @@ def FormatTime(t):
     return out
     
 # Takes the original line and the index of a difference in time and returns them in a nicely formatted string
-def FormatLine(l, i):
+def FormatLine(l, i, timeDiff):
     l = l.lstrip().rstrip()
     return "{0} \t// {1}\n".format(l, FormatTime(timeDiff[i]))
     
 # Outputs the obtained data to the clipboard
-def GetOutput(totalTime):
+def GetOutput(lines, timeDiff, totalTime):
     out = ""
     
     # Add the original lines along with the difference in times
     i = ZERO
     for l in lines:
         if START_END_SEPARATOR in l and TIME_SEPARATOR in l:
-            out += FormatLine(l, i)
+            out += FormatLine(l, i, timeDiff)
             i += ONE
         else:
             out += l
@@ -175,29 +175,33 @@ ONE                 = 1
 FILEPATH            = ""
 OUTPUT_TO_FILE      = False
 
-# Grab the individual lines from the clipboard or the file we are loading
-lines = GetLines()
-# If we have no lines, we have nothing to process!
-if len(lines) == ZERO:
-    print("ERROR: No lines found!")
-    sys.exit()
+def main():
+    # Grab the individual lines from the clipboard or the file we are loading
+    lines = GetLines()
+    # If we have no lines, we have nothing to process!
+    if len(lines) == ZERO:
+        print("ERROR: No lines found!")
+        sys.exit()
 
-# Parses the lines and gets any time differences it can extract
-timeDiff = GetTimeDiffs(lines)
-# If we haven't found any time differences, there's nothing we can do!
-if len(timeDiff) == ZERO:
-    print("\nERROR: No times found in provided lines!")
-    sys.exit()
-    
-totalTime = GetTotalTime(timeDiff)
-    
-out = GetOutput(totalTime)
-# Formats the obtained information, and sends it to wherever it needs to go!
-if OUTPUT_TO_FILE:
-    # We output to a file named FILEPATH_.ext (where ext is the file's original extension)
-    outFilepath = FILEPATH[:FILEPATH.rfind(".")] + "_" + FILEPATH[FILEPATH.rfind("."):]
-    
-    with open(outFilepath, 'w') as outFile:
-        outFile.writelines(out)
-else:
-    pyperclip.copy(out)
+    # Parses the lines and gets any time differences it can extract
+    timeDiff = GetTimeDiffs(lines)
+    # If we haven't found any time differences, there's nothing we can do!
+    if len(timeDiff) == ZERO:
+        print("\nERROR: No times found in provided lines!")
+        sys.exit()
+        
+    totalTime = GetTotalTime(timeDiff)
+        
+    out = GetOutput(lines, timeDiff, totalTime)
+    # Formats the obtained information, and sends it to wherever it needs to go!
+    if OUTPUT_TO_FILE:
+        # We output to a file named FILEPATH_.ext (where ext is the file's original extension)
+        outFilepath = FILEPATH[:FILEPATH.rfind(".")] + "_" + FILEPATH[FILEPATH.rfind("."):]
+        
+        with open(outFilepath, 'w') as outFile:
+            outFile.writelines(out)
+    else:
+        pyperclip.copy(out)
+        
+if __name__ == "__main__":
+    main()
